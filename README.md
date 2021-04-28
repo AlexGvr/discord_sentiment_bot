@@ -17,7 +17,7 @@ with ~80% accuracy on validation set.
 * Next, you will be required python 3 installed on your computer
 * Then you will be required install all needed packages:
 ```pip install -r requirements.txt```
-* In config.py specify the name of the bot you want and Discord token
+* In config.py specify the name of the bot you want and bot token
 * Last, run discord_bot.py
 ---
 ### Functionality:

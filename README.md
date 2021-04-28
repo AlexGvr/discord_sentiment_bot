@@ -8,7 +8,7 @@ This bot allows you to count and separate the previously sent messages of users 
 ### Info
 RuBert (https://huggingface.co/DeepPavlov/rubert-base-cased) was taken as a predictive model (predict three classes).
 Fine-tuned on RuSentiment dataset for sentiment analysis of Russian social media (https://github.com/strawberrypie/rusentiment)
-with ~80% accuracy on validation.
+with ~80% accuracy on validation set.
 
 ---
 ### Setup:

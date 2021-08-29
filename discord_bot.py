@@ -12,13 +12,19 @@ from torch.utils.data import TensorDataset, DataLoader, SequentialSampler
 from keras.preprocessing.sequence import pad_sequences
 from collections import Counter
 import pandas as pd
+import time
+import tqdm
+from bert_model import download_model
 
 global points
 points = 0
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+model, tokenizer = download_model()
+
 bot = commands.Bot(command_prefix = settings['prefix'])
 client = discord.Client()
+
 
 
 @bot.command()
@@ -86,7 +92,7 @@ async def on_message(ctx):
             calc = await ctx.channel.send(embed=embed)
             counter = 0
             Ctotal = 0
-            async for msg in (discord.abc.Messageable.history(ctx.channel,limit=5000)):
+            async for msg in (discord.abc.Messageable.history(ctx.channel,limit=15000)):
 
                 Ctotal += 1
                 if msg.author == fetch_target:
@@ -99,7 +105,7 @@ async def on_message(ctx):
                 sum = Ctotal
                 sum2 = counter * 100/ sum
                 sum3 = round(sum2, 2)
-                if (Ctotal % 5000 == 0):
+                if (Ctotal % 15000 == 0):
                     embed2 = discord.Embed(title="I'm busy counting~", color=0xff0000)
                     embed2.set_author(name=dp_name, icon_url=fetch_target.avatar_url)
                     embed2.add_field(name="Total messages counted:", value="{} messages so far".format(Ctotal),
@@ -108,7 +114,7 @@ async def on_message(ctx):
                                      inline=False)
                     embed2.add_field(name="Your message participation percentage:", value="{}%".format(sum3), inline=False)
                     embed2.set_footer(text="counting done soonTM")
-                    await bot.edit_message(calc, embed=embed2)
+                    # await bot.edit_message(calc, embed=embed2)
 
             # print(comments)
             q = toxic_check_1(comments)
@@ -202,7 +208,8 @@ async def toxic(ctx, *, content:str):
     :param content:
     :return:
     """
-    model, tokenizer = download_model()
+    start = time.time()
+    # model, tokenizer = download_model()
     tokens = [
         tokenizer.convert_tokens_to_ids(
             ['[CLS]'] + tokenizer.tokenize(t) + ['[SEP]']
@@ -249,57 +256,18 @@ async def toxic(ctx, *, content:str):
             test_preds.extend(batch_preds)
 
     # print(batch_preds)
+    end = time.time()
+    print(end - start)
     if batch_preds[0] == 0:
         return await ctx.channel.send('Toxic comment')
     else:
         return await ctx.channel.send('Not toxic comment')
 
-def download_model():
-    """
-    Download Bert model
-    :return:
-    """
-    SEED = 1234
 
-    random.seed(SEED)
-    torch.manual_seed(SEED)
-    # torch.backends.cudnn.deterministic = True
-
-
-    if device == 'cpu':
-        print('cpu')
-    else:
-        n_gpu = torch.cuda.device_count()
-        print(torch.cuda.get_device_name(0))
-
-    print(os.getcwd())
-    config = BertConfig.from_pretrained(os.getcwd() + '/config.json')
-
-    class MyBert(torch.nn.Module):
-        def __init__(self, config):
-            super(MyBert, self).__init__()
-            self.h1 = BertModel(config=config)
-            self.classifier = torch.nn.Linear(768, 3)
-
-        def forward(self, input_ids, attention_mask):
-            output_1 = self.h1(input_ids=input_ids, attention_mask=attention_mask)
-            hidden_state = output_1[0]
-            pooler = hidden_state[:, 0]
-            output = self.classifier(pooler)
-            return output
-
-    model = MyBert(config)
-    model.load_state_dict(torch.load(os.getcwd() + '/best_chekpoint.pt'))
-
-    model.to(device)
-    model.eval()
-    tokenizer = BertTokenizer.from_pretrained(os.getcwd())
-
-    return model, tokenizer
 
 def toxic_check_1(comments: list):
 
-    model, tokenizer = download_model()
+    # model, tokenizer = download_model()
     tokens = [
         tokenizer.convert_tokens_to_ids(
             ['[CLS]'] + tokenizer.tokenize(t) + ['[SEP]']
@@ -347,7 +315,6 @@ def toxic_check_1(comments: list):
 
     # print(batch_preds)
     return Counter(test_preds)
-
 
 
 bot.run(settings['token'])

@@ -45,11 +45,8 @@ async def hello(ctx):
     ]
     weights = [10,10,10,10,1,1]
     say = random.choices(greetings,weights, k=1)[0]
-    print(ctx)
-    if str(author) == 'Shyamalan#8088':
-        await ctx.send(f'Ты блять кто?')
-    else:
-        await ctx.send(f'{say}, {author.mention}!')
+#     print(ctx)
+    await ctx.send(f'{say}, {author.mention}!')
 
 @bot.command()
 async def joined(ctx, *, member: discord.Member):
